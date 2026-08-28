@@ -224,7 +224,6 @@ export default function Home() {
         {WEATHER_SCENES[game.weather.kind].image && (
           <Image src={WEATHER_SCENES[game.weather.kind].image!} alt="" fill className="weather-scene" />
         )}
-        {game.weather.kind === 'rainy' && <div className="rain-layer" aria-hidden="true" />}
         {activeDecorations.map((decoration) => (
           <div key={decoration.id} className={`cafe-decoration ${decoration.positionClass}`}>
             <Image src={decoration.image!} alt="" fill sizes="220px" />
