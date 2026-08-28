@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { BookOpen, CloudRain, Coffee, Download, Music2, Play, Settings, Square, Sun, Upload } from 'lucide-react';
+import { BookOpen, Clock, Coffee, Download, Music2, Play, Settings, Square, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Slider } from '@/components/ui/slider';
@@ -123,7 +123,7 @@ export default function Home() {
     setElapsedSeconds(0);
     await persist(next);
     void playBgmFromGesture();
-    notify(`${activeMenu.name}と一緒に、作業をはじめました。`);
+    notify('ごゆっくりお過ごしください');
   };
 
   const finishWork = async () => {
@@ -153,8 +153,7 @@ export default function Home() {
     setHistory((current) => [session, ...current]);
     setElapsedSeconds(0);
     try { await saveCompletedSession(next, session); } catch { notify('今回の作業を保存できませんでした。'); return; }
-    const newlyUnlocked = unlockedMenuIds.filter((id) => !game.unlockedMenuIds.includes(id));
-    notify(newlyUnlocked.length > 0 ? `おつかれさまでした。注文できるメニューが増えました。` : `おつかれさまでした。${formatTotal(durationSeconds)}の作業を記録しました。`);
+    notify('またのご来店をお待ちしております');
   };
 
   const updateBgmEnabled = async (enabled: boolean) => {
@@ -212,8 +211,6 @@ export default function Home() {
     }
   };
 
-  const WeatherIcon = game.weather.kind === 'rainy' ? CloudRain : Sun;
-
   return (
     <main className="game-shell">
       <audio ref={audioRef} src="/assets/bgm_01.mp3" loop preload="none">
@@ -231,22 +228,24 @@ export default function Home() {
         ))}
 
         <header className="top-bar">
-          <div className="brand-mark">
-            <Coffee aria-hidden="true" />
-            <div><p className="eyebrow">WORK &amp; REST</p><h1>Café Komorebi</h1></div>
+          <div className="brand-zone">
+            <div className="brand-mark">
+              <Coffee aria-hidden="true" />
+              <div><p className="eyebrow">WORK &amp; REST</p><h1>Café Komorebi</h1></div>
+            </div>
+            <div className={`compact-timer ${game.isWorking ? 'is-working' : ''}`} title="現在の作業時間 / 累計作業時間">
+              <Clock aria-hidden="true" />
+              <div>
+                <time aria-label={`現在の作業時間 ${formatClock(elapsedSeconds)}`}>{formatClock(elapsedSeconds)}</time>
+                <span aria-label={`累計作業時間 ${formatTotal(game.totalWorkSeconds)}`}>{formatTotal(game.totalWorkSeconds)}</span>
+              </div>
+            </div>
           </div>
           <nav className="top-actions" aria-label="補助メニュー">
-            <span className="weather-chip" title={`今日の天気：${WEATHER_SCENES[game.weather.kind].label}`}><WeatherIcon /> {WEATHER_SCENES[game.weather.kind].label}</span>
             <Button variant="outline" className="glass-button" onClick={() => setCollectionOpen(true)}><BookOpen /> 図鑑</Button>
             <Button variant="outline" size="icon" className="glass-button" onClick={() => setSettingsOpen(true)} aria-label="設定"><Settings /></Button>
           </nav>
         </header>
-
-        <div className={`session-card ${game.isWorking ? 'is-working' : ''}`}>
-          <p className="session-status"><span /> {game.isWorking ? '作業中' : 'ご注文をどうぞ'}</p>
-          <p className="timer-display" aria-live="off">{formatClock(elapsedSeconds)}</p>
-          <div className="total-row"><span>これまでの作業</span><strong>{formatTotal(game.totalWorkSeconds)}</strong></div>
-        </div>
 
         <div className={`ordered-item ${game.isWorking ? 'is-working' : ''}`} aria-label={`注文中：${activeMenu.name}`}>
           <Image key={activeMenu.id} src={activeMenu.image} alt={activeMenu.name} fill sizes="(max-width: 640px) 70vw, 310px" />
@@ -254,11 +253,11 @@ export default function Home() {
 
         <div className="control-dock">
           <div className="order-summary"><span className="order-label">TODAY&apos;S ORDER</span><strong>{activeMenu.name}</strong></div>
-          <Button variant="outline" className="order-button" onClick={() => setOrderOpen(true)} disabled={game.isWorking || !loaded}>注文を選ぶ</Button>
+          <Button variant="outline" className="order-button" onClick={() => setOrderOpen(true)} disabled={game.isWorking || !loaded}>メニューを選ぶ</Button>
           {game.isWorking ? (
             <Button className="finish-button" onClick={finishWork}><Square /> 作業をおえる</Button>
           ) : (
-            <Button className="start-button" onClick={startWork} disabled={!loaded}><Play /> 作業をはじめる</Button>
+            <Button className="start-button" onClick={startWork} disabled={!loaded}><Play /> 注文する</Button>
           )}
         </div>
 
