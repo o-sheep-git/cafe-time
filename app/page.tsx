@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { CSSProperties } from 'react';
 import { BookOpen, Clock, Coffee, Download, Music2, Play, Settings, Square, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -217,7 +218,7 @@ export default function Home() {
         <track kind="captions" src="/assets/bgm_01.vtt" srcLang="ja" label="歌詞のない店内BGM" default />
       </audio>
       <section className={`cafe-stage weather-${game.weather.kind}`} aria-label="カフェ店内">
-        <Image src="/assets/bgimg_01.png" alt="陽だまりの静かなカフェ店内" fill priority sizes="100vw" className="cafe-background" />
+        <Image src="/assets/bgimg_01.png" alt="陽だまりの静かなカフェ店内" fill priority sizes="(max-width: 640px) 100vw, 1200px" className="cafe-background" />
         {WEATHER_SCENES[game.weather.kind].image && (
           <Image src={WEATHER_SCENES[game.weather.kind].image!} alt="" fill className="weather-scene" />
         )}
@@ -226,6 +227,18 @@ export default function Home() {
             <Image src={decoration.image!} alt="" fill sizes="220px" />
           </div>
         ))}
+
+        <div
+          className={`ordered-item ${game.isWorking ? 'is-working' : ''}`}
+          style={{
+            '--item-x': `${activeMenu.placement.x}%`,
+            '--item-y': `${activeMenu.placement.y}%`,
+            '--item-scale': activeMenu.placement.scale,
+          } as CSSProperties}
+          aria-label={`注文中：${activeMenu.name}`}
+        >
+          <Image key={activeMenu.id} src={activeMenu.image} alt={activeMenu.name} fill sizes="(max-width: 640px) 28vw, 290px" />
+        </div>
 
         <header className="top-bar">
           <div className="brand-zone">
@@ -246,10 +259,6 @@ export default function Home() {
             <Button variant="outline" size="icon" className="glass-button" onClick={() => setSettingsOpen(true)} aria-label="設定"><Settings /></Button>
           </nav>
         </header>
-
-        <div className={`ordered-item ${game.isWorking ? 'is-working' : ''}`} aria-label={`注文中：${activeMenu.name}`}>
-          <Image key={activeMenu.id} src={activeMenu.image} alt={activeMenu.name} fill sizes="(max-width: 640px) 70vw, 310px" />
-        </div>
 
         <div className="control-dock">
           <div className="order-summary"><span className="order-label">TODAY&apos;S ORDER</span><strong>{activeMenu.name}</strong></div>

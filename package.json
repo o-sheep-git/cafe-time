@@ -12,6 +12,7 @@
     "dev:sites": "vinext dev",
     "build:sites": "vinext build",
     "start:sites": "wrangler dev --config dist/server/wrangler.json",
+    "assets:trim-menu": "node scripts/trim-menu-assets.mjs",
     "lint": "oxlint",
     "format": "oxfmt"
   },
