@@ -15,11 +15,9 @@ import {
   exportSaveData,
   loadGameData,
   replaceAllSaveData,
-  saveCompletedSession,
   saveGameState,
   validateImportedSave,
   type GameState,
-  type WorkSession,
 } from '@/lib/game-db';
 
 const formatClock = (seconds: number) => {
@@ -41,7 +39,6 @@ const formatUnlock = (minutes: number) => minutes === 0 ? 'はじめから' : `�
 
 export default function Home() {
   const [game, setGame] = useState<GameState>(() => createDefaultState());
-  const [history, setHistory] = useState<WorkSession[]>([]);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [loaded, setLoaded] = useState(false);
   const [orderOpen, setOrderOpen] = useState(false);
@@ -69,10 +66,9 @@ export default function Home() {
   useEffect(() => {
     let mounted = true;
     loadGameData()
-      .then(({ game: storedGame, workHistory }) => {
+      .then((storedGame) => {
         if (!mounted) return;
         setGame(storedGame);
-        setHistory(workHistory);
         if (storedGame.isWorking && storedGame.workStartedAt) {
           setElapsedSeconds(Math.max(0, Math.floor((Date.now() - Date.parse(storedGame.workStartedAt)) / 1000)));
         }
@@ -113,8 +109,6 @@ export default function Home() {
     if (!unlockedIds.has(menuId) || game.isWorking) return;
     const next = { ...game, activeMenuId: menuId };
     await persist(next);
-    setOrderOpen(false);
-    void playBgmFromGesture();
   };
 
   const startWork = async () => {
@@ -123,6 +117,7 @@ export default function Home() {
     const next = { ...game, isWorking: true, workStartedAt: startedAt };
     setElapsedSeconds(0);
     await persist(next);
+    setOrderOpen(false);
     void playBgmFromGesture();
     notify('ごゆっくりお過ごしください');
   };
@@ -138,22 +133,15 @@ export default function Home() {
     const next: GameState = {
       ...game,
       totalWorkSeconds,
+      completedSessionCount: Math.min(game.completedSessionCount + 1, 1_000_000_000),
       isWorking: false,
       workStartedAt: null,
       unlockedMenuIds,
       decorationProgress: { ...game.decorationProgress, lastEvaluatedMinutes: minutes, activeDecorationIds },
     };
-    const session: WorkSession = {
-      id: crypto.randomUUID(),
-      startedAt: game.workStartedAt,
-      endedAt: endedAt.toISOString(),
-      durationSeconds,
-      menuId: game.activeMenuId,
-    };
     setGame(next);
-    setHistory((current) => [session, ...current]);
     setElapsedSeconds(0);
-    try { await saveCompletedSession(next, session); } catch { notify('今回の作業を保存できませんでした。'); return; }
+    try { await saveGameState(next); } catch { notify('今回の作業を保存できませんでした。'); return; }
     notify('またのご来店をお待ちしております');
   };
 
@@ -201,7 +189,6 @@ export default function Home() {
       const save = validateImportedSave(parsed);
       await replaceAllSaveData(save);
       setGame(save.game);
-      setHistory([...save.workHistory].sort((a, b) => b.startedAt.localeCompare(a.startedAt)));
       setElapsedSeconds(save.game.isWorking && save.game.workStartedAt ? Math.max(0, Math.floor((Date.now() - Date.parse(save.game.workStartedAt)) / 1000)) : 0);
       if (!save.game.settings.bgmEnabled) audioRef.current?.pause();
       notify('セーブデータを復元しました。');
@@ -228,17 +215,19 @@ export default function Home() {
           </div>
         ))}
 
-        <div
-          className={`ordered-item ${game.isWorking ? 'is-working' : ''}`}
-          style={{
-            '--item-x': `${activeMenu.placement.x}%`,
-            '--item-y': `${activeMenu.placement.y}%`,
-            '--item-scale': activeMenu.placement.scale,
-          } as CSSProperties}
-          aria-label={`注文中：${activeMenu.name}`}
-        >
-          <Image key={activeMenu.id} src={activeMenu.image} alt={activeMenu.name} fill sizes="(max-width: 640px) 28vw, 290px" />
-        </div>
+        {game.isWorking && (
+          <div
+            className="ordered-item is-working"
+            style={{
+              '--item-x': `${activeMenu.placement.x}%`,
+              '--item-y': `${activeMenu.placement.y}%`,
+              '--item-scale': activeMenu.placement.scale,
+            } as CSSProperties}
+            aria-label={`注文中：${activeMenu.name}`}
+          >
+            <Image key={activeMenu.id} src={activeMenu.image} alt={activeMenu.name} fill sizes="(max-width: 640px) 28vw, 290px" />
+          </div>
+        )}
 
         <header className="top-bar">
           <div className="brand-zone">
@@ -260,13 +249,14 @@ export default function Home() {
           </nav>
         </header>
 
-        <div className="control-dock">
-          <div className="order-summary"><span className="order-label">TODAY&apos;S ORDER</span><strong>{activeMenu.name}</strong></div>
+        <div className={`control-dock ${game.isWorking ? 'is-working' : 'is-idle'}`}>
+          <div className="order-summary">
+            <span className="order-label">{game.isWorking ? 'TODAY\'S ORDER' : 'ORDER AT THE COUNTER'}</span>
+            <strong>{game.isWorking ? activeMenu.name : 'お好きなメニューをどうぞ'}</strong>
+          </div>
           <Button variant="outline" className="order-button" onClick={() => setOrderOpen(true)} disabled={game.isWorking || !loaded}>メニューを選ぶ</Button>
-          {game.isWorking ? (
+          {game.isWorking && (
             <Button className="finish-button" onClick={finishWork}><Square /> 作業をおえる</Button>
-          ) : (
-            <Button className="start-button" onClick={startWork} disabled={!loaded}><Play /> 注文する</Button>
           )}
         </div>
 
@@ -284,10 +274,14 @@ export default function Home() {
               return (
                 <button key={item.id} type="button" className={`menu-tile ${selected ? 'is-selected' : ''} ${unlocked ? '' : 'is-locked'}`} onClick={() => chooseMenu(item.id)} disabled={!unlocked || game.isWorking}>
                   <span className="menu-art"><Image src={item.image} alt="" fill sizes="150px" /></span>
-                  <span className="menu-tile-copy"><strong>{unlocked ? item.name : '？？？'}</strong><small>{unlocked ? (selected ? '注文中' : item.category === 'drink' ? 'ドリンク' : 'フード') : formatUnlock(item.unlockMinutes)}</small></span>
+                  <span className="menu-tile-copy"><strong>{unlocked ? item.name : '？？？'}</strong><small>{unlocked ? (selected ? '選択中' : item.category === 'drink' ? 'ドリンク' : 'フード') : formatUnlock(item.unlockMinutes)}</small></span>
                 </button>
               );
             })}
+          </div>
+          <div className="menu-order-footer">
+            <div className="menu-order-selection"><span>選択中のメニュー</span><strong>{activeMenu.name}</strong></div>
+            <Button className="start-button" onClick={startWork} disabled={!loaded || game.isWorking}><Play /> 注文する</Button>
           </div>
         </DialogContent>
       </Dialog>
@@ -325,13 +319,13 @@ export default function Home() {
             </div>
           </section>
           <section className="setting-section save-section">
-            <div><strong>セーブデータ</strong><p>この端末に自動保存されています · 作業履歴 {history.length}件</p></div>
+            <div><strong>セーブデータ</strong><p>この端末に自動保存されています · 完了セッション {game.completedSessionCount}回</p></div>
             <div className="save-actions">
               <Button variant="outline" onClick={downloadSave}><Download /> セーブデータを書き出す</Button>
               <Button variant="outline" onClick={() => importInputRef.current?.click()}><Upload /> JSONから復元</Button>
               <input ref={importInputRef} className="sr-only" type="file" accept="application/json,.json" onChange={(event) => void importSave(event.target.files?.[0])} />
             </div>
-            <p className="save-note">読み込み上限 1MB。復元すると、この端末の現在のセーブデータを置き換えます。</p>
+            <p className="save-note">version 2形式・読み込み上限 1MB。復元すると、この端末の現在のセーブデータを置き換えます。</p>
           </section>
         </DialogContent>
       </Dialog>

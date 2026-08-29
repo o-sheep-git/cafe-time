@@ -49,6 +49,7 @@ button { font-family: inherit; }
 .compact-timer span { color: rgba(255,240,213,.62); font: 10px/1.1 ui-sans-serif, system-ui, sans-serif; }
 .compact-timer.is-working > svg { color: #ecc487; opacity: .92; animation: quiet-pulse 2.4s ease-in-out infinite; }
 .control-dock { position: absolute; z-index: 6; right: clamp(14px, 2vw, 24px); bottom: clamp(14px, 2vw, 24px); left: clamp(14px, 2vw, 24px); display: grid; grid-template-columns: 1fr auto auto; gap: 10px; align-items: center; padding: 12px 14px; border: 1px solid rgba(255,242,216,.4); border-radius: 15px; background: rgba(45,28,20,.79); color: #fff8e9; box-shadow: 0 12px 32px rgba(19,9,4,.26); backdrop-filter: blur(14px); }
+.control-dock.is-idle { grid-template-columns: 1fr auto; }
 .order-summary { min-width: 0; display: flex; flex-direction: column; }
 .order-label { color: #d6b98d; font: 700 9px/1.2 ui-sans-serif, system-ui, sans-serif; letter-spacing: .16em; }
 .order-summary strong { overflow: hidden; margin-top: 3px; font-size: 16px; text-overflow: ellipsis; white-space: nowrap; }
@@ -70,6 +71,7 @@ button { font-family: inherit; }
 .game-dialog { max-height: min(86svh, 780px); overflow: hidden; border: 1px solid #d4bf9d; border-radius: 18px; background: linear-gradient(160deg, #fffaf0, #f1e2c8); color: #39281f; box-shadow: 0 26px 90px rgba(31,17,9,.38); padding: 22px; }
 .game-dialog button[data-slot="dialog-close"] { color: #5b4638; }
 .menu-dialog, .collection-dialog { width: min(760px, calc(100% - 24px)); height: min(86svh, 780px); max-width: 760px !important; grid-template-rows: auto minmax(0, 1fr); }
+.menu-dialog { grid-template-rows: auto minmax(0, 1fr) auto; }
 .settings-dialog { width: min(530px, calc(100% - 24px)); max-width: 530px !important; overflow-y: auto; }
 .dialog-kicker { margin: 0 0 -2px; color: #9b704b; font: 800 9px/1 ui-sans-serif, system-ui, sans-serif; letter-spacing: .2em; }
 .game-dialog [data-slot="dialog-title"] { font-size: 22px; font-weight: 600; letter-spacing: .03em; }
@@ -86,6 +88,11 @@ button { font-family: inherit; }
 .menu-tile-copy { display: flex; min-width: 0; flex-direction: column; gap: 4px; padding: 10px 11px 11px; }
 .menu-tile-copy strong { overflow: hidden; font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
 .menu-tile-copy small { color: #907560; font: 10px/1.25 ui-sans-serif, system-ui, sans-serif; }
+.menu-order-footer { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding-top: 14px; border-top: 1px solid rgba(141,92,55,.22); }
+.menu-order-selection { display: flex; min-width: 0; flex-direction: column; gap: 3px; }
+.menu-order-selection span { color: #907560; font: 10px/1.2 ui-sans-serif, system-ui, sans-serif; }
+.menu-order-selection strong { overflow: hidden; font-size: 15px; text-overflow: ellipsis; white-space: nowrap; }
+.menu-order-footer .start-button { flex: none; min-width: 132px; }
 .collection-list { display: grid; min-height: 0; grid-template-columns: 1fr 1fr; gap: 9px; overflow-y: auto; overscroll-behavior: contain; padding: 2px; -webkit-overflow-scrolling: touch; }
 .collection-item { display: grid; grid-template-columns: 106px 1fr; min-width: 0; min-height: 112px; overflow: hidden; border: 1px solid #d7c5a7; border-radius: 13px; background: rgba(255,253,247,.62); }
 .collection-art { position: relative; display: block; background: radial-gradient(circle, #fff9e9, #ead9bc); }
@@ -137,6 +144,8 @@ button { font-family: inherit; }
   .notice-toast { bottom: 62px; }
   .game-dialog { padding: 18px 14px 14px; }
   .menu-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .menu-order-footer { padding-top: 10px; }
+  .menu-order-footer .start-button { min-width: 120px; }
   .collection-list { grid-template-columns: 1fr; }
   .collection-item { grid-template-columns: 90px 1fr; min-height: 98px; }
   .save-actions { grid-template-columns: 1fr; }
