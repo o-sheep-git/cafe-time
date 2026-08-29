@@ -42,6 +42,8 @@ export default function Home() {
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [loaded, setLoaded] = useState(false);
   const [orderOpen, setOrderOpen] = useState(false);
+  const [unlockOpen, setUnlockOpen] = useState(false);
+  const [newlyUnlockedMenuIds, setNewlyUnlockedMenuIds] = useState<string[]>([]);
   const [collectionOpen, setCollectionOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [notice, setNotice] = useState('');
@@ -53,6 +55,10 @@ export default function Home() {
     [game.activeMenuId],
   );
   const unlockedIds = useMemo(() => new Set(game.unlockedMenuIds), [game.unlockedMenuIds]);
+  const newlyUnlockedMenus = useMemo(
+    () => MENU_ITEMS.filter((item) => newlyUnlockedMenuIds.includes(item.id)),
+    [newlyUnlockedMenuIds],
+  );
   const activeDecorations = useMemo(
     () => DECORATIONS.filter((item) => game.decorationProgress.activeDecorationIds.includes(item.id) && item.image),
     [game.decorationProgress.activeDecorationIds],
@@ -128,6 +134,8 @@ export default function Home() {
     const durationSeconds = Math.max(1, Math.floor((endedAt.getTime() - Date.parse(game.workStartedAt)) / 1000));
     const totalWorkSeconds = Math.min(game.totalWorkSeconds + durationSeconds, 100 * 365.25 * 24 * 60 * 60);
     const unlockedMenuIds = getUnlockedMenuIds(totalWorkSeconds);
+    const previouslyUnlockedIds = new Set(game.unlockedMenuIds);
+    const newlyUnlockedIds = unlockedMenuIds.filter((menuId) => !previouslyUnlockedIds.has(menuId));
     const minutes = Math.floor(totalWorkSeconds / 60);
     const activeDecorationIds = pickDecorations(totalWorkSeconds, game.decorationProgress.seed + minutes);
     const next: GameState = {
@@ -142,6 +150,10 @@ export default function Home() {
     setGame(next);
     setElapsedSeconds(0);
     try { await saveGameState(next); } catch { notify('今回の作業を保存できませんでした。'); return; }
+    if (newlyUnlockedIds.length > 0) {
+      setNewlyUnlockedMenuIds(newlyUnlockedIds);
+      setUnlockOpen(true);
+    }
     notify('またのご来店をお待ちしております');
   };
 
@@ -263,6 +275,27 @@ export default function Home() {
         {!loaded && <div className="loading-veil"><Coffee /><span>いつもの席を準備しています…</span></div>}
         {notice && <output className="notice-toast" aria-live="polite">{notice}</output>}
       </section>
+
+      <Dialog open={unlockOpen} onOpenChange={setUnlockOpen}>
+        <DialogContent className="game-dialog unlock-dialog">
+          <DialogHeader>
+            <p className="dialog-kicker">NEW MENU</p>
+            <DialogTitle>新しいメニューを解放しました</DialogTitle>
+            <DialogDescription>今回の作業で {newlyUnlockedMenus.length} 品のメニューが増えました。</DialogDescription>
+          </DialogHeader>
+          <div className={`unlock-grid ${newlyUnlockedMenus.length === 1 ? 'is-single' : ''}`}>
+            {newlyUnlockedMenus.map((item) => (
+              <article key={item.id} className="unlock-card">
+                <span className="unlock-art"><Image src={item.image} alt="" fill sizes="190px" style={{ objectFit: 'contain' }} /></span>
+                <div><p>{item.category === 'drink' ? 'DRINK' : 'FOOD'}</p><h3>{item.name}</h3><span>{item.description}</span></div>
+              </article>
+            ))}
+          </div>
+          <div className="unlock-footer">
+            <Button onClick={() => { setUnlockOpen(false); setCollectionOpen(true); }}><BookOpen /> 図鑑で見る</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={orderOpen} onOpenChange={setOrderOpen}>
         <DialogContent className="game-dialog menu-dialog">

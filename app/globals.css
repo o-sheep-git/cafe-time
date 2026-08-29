@@ -72,6 +72,7 @@ button { font-family: inherit; }
 .menu-dialog, .collection-dialog { width: min(760px, calc(100% - 24px)); height: min(86svh, 780px); max-width: 760px !important; grid-template-rows: auto minmax(0, 1fr); }
 .menu-dialog { grid-template-rows: auto minmax(0, 1fr) auto; }
 .settings-dialog { width: min(530px, calc(100% - 24px)); max-width: 530px !important; overflow-y: auto; }
+.unlock-dialog { width: min(560px, calc(100% - 24px)); max-width: 560px !important; }
 .dialog-kicker { margin: 0 0 -2px; color: #9b704b; font: 800 9px/1 ui-sans-serif, system-ui, sans-serif; letter-spacing: .2em; }
 .game-dialog [data-slot="dialog-title"] { font-size: 22px; font-weight: 600; letter-spacing: .03em; }
 .game-dialog [data-slot="dialog-description"] { color: #7d6757; }
@@ -92,6 +93,17 @@ button { font-family: inherit; }
 .menu-order-selection span { color: #907560; font: 10px/1.2 ui-sans-serif, system-ui, sans-serif; }
 .menu-order-selection strong { overflow: hidden; font-size: 15px; text-overflow: ellipsis; white-space: nowrap; }
 .menu-order-footer .start-button { flex: none; min-width: 132px; }
+.unlock-grid { display: grid; max-height: 48svh; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; overflow-y: auto; overscroll-behavior: contain; padding: 2px; }
+.unlock-grid.is-single { grid-template-columns: minmax(0, 220px); justify-content: center; }
+.unlock-card { display: flex; min-width: 0; flex-direction: column; overflow: hidden; border: 1px solid #cda976; border-radius: 14px; background: rgba(255,253,247,.72); box-shadow: 0 8px 22px rgba(74,45,27,.1); }
+.unlock-art { position: relative; display: block; width: 100%; aspect-ratio: 1.35; background: radial-gradient(circle at 50% 48%, #fff9e9, #e9d5b3); }
+.unlock-art img { transform: scale(.88); }
+.unlock-card > div { padding: 11px 12px 13px; }
+.unlock-card p { margin: 0 0 5px; color: #a16f44; font: 800 8px/1 ui-sans-serif, system-ui, sans-serif; letter-spacing: .14em; }
+.unlock-card h3 { margin: 0 0 5px; font-size: 15px; }
+.unlock-card span { color: #755f4e; font: 10px/1.45 ui-sans-serif, system-ui, sans-serif; }
+.unlock-footer { display: flex; justify-content: flex-end; padding-top: 2px; }
+.unlock-footer button { min-width: 132px; background: #6c402c; color: #fff8e9; }
 .collection-list { display: grid; min-height: 0; grid-template-columns: 1fr 1fr; gap: 9px; overflow-y: auto; overscroll-behavior: contain; padding: 2px; -webkit-overflow-scrolling: touch; }
 .collection-item { display: grid; grid-template-columns: 106px 1fr; min-width: 0; min-height: 112px; overflow: hidden; border: 1px solid #d7c5a7; border-radius: 13px; background: rgba(255,253,247,.62); }
 .collection-art { position: relative; display: block; background: radial-gradient(circle, #fff9e9, #ead9bc); }
@@ -144,6 +156,8 @@ button { font-family: inherit; }
   .menu-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .menu-order-footer { padding-top: 10px; }
   .menu-order-footer .start-button { min-width: 120px; }
+  .unlock-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .unlock-grid.is-single { grid-template-columns: minmax(0, 190px); }
   .collection-list { grid-template-columns: 1fr; }
   .collection-item { grid-template-columns: 90px 1fr; min-height: 98px; }
   .save-actions { grid-template-columns: 1fr; }
