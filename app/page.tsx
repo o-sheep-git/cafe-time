@@ -225,7 +225,7 @@ export default function Home() {
             } as CSSProperties}
             aria-label={`注文中：${activeMenu.name}`}
           >
-            <Image key={activeMenu.id} src={activeMenu.image} alt={activeMenu.name} fill sizes="(max-width: 640px) 28vw, 290px" />
+            <Image key={activeMenu.id} src={activeMenu.image} alt={activeMenu.name} fill sizes="(max-width: 640px) 28vw, 290px" style={{ objectFit: 'contain' }} />
           </div>
         )}
 
@@ -273,7 +273,7 @@ export default function Home() {
               const selected = item.id === game.activeMenuId;
               return (
                 <button key={item.id} type="button" className={`menu-tile ${selected ? 'is-selected' : ''} ${unlocked ? '' : 'is-locked'}`} onClick={() => chooseMenu(item.id)} disabled={!unlocked || game.isWorking}>
-                  <span className="menu-art"><Image src={item.image} alt="" fill sizes="150px" /></span>
+                  <span className="menu-art"><Image src={item.image} alt="" fill sizes="150px" style={{ objectFit: 'contain' }} /></span>
                   <span className="menu-tile-copy"><strong>{unlocked ? item.name : '？？？'}</strong><small>{unlocked ? (selected ? '選択中' : item.category === 'drink' ? 'ドリンク' : 'フード') : formatUnlock(item.unlockMinutes)}</small></span>
                 </button>
               );
@@ -294,7 +294,7 @@ export default function Home() {
               const unlocked = unlockedIds.has(item.id);
               return (
                 <article key={item.id} className={`collection-item ${unlocked ? '' : 'is-locked'}`}>
-                  <span className="collection-art"><Image src={item.image} alt="" fill sizes="120px" /></span>
+                  <span className="collection-art"><Image src={item.image} alt="" fill sizes="120px" style={{ objectFit: 'contain' }} /></span>
                   <div><p>{item.category === 'drink' ? 'DRINK' : 'FOOD'} · {formatUnlock(item.unlockMinutes)}</p><h3>{unlocked ? item.name : '？？？'}</h3><span>{unlocked ? item.description : `あと ${Math.max(0, item.unlockMinutes - Math.floor(game.totalWorkSeconds / 60))}分で出会えます`}</span></div>
                 </article>
               );
